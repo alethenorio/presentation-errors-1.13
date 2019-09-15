@@ -1,0 +1,115 @@
+Errors in Go 1.13
+
+Alexandre Thenorio
+Einride
+https://github.com/alethenorio
+@alethenorio
+
+
+* A story about an error
+
+* Don't just check errors, handle them gracefully
+.link https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully
+
+* Go 2 draft proposal
+
+.link https://go.googlesource.com/proposal/+/master/design/go2draft-error-values-overview.md
+
+- Error inspection
+- Error formatting
+
+* Error inspection in 1.13
+
+* Unwrap
+.code src/defs.go /func Unwrap/,/^/
+
+Any error implementing this function can be unwrapped
+
+* A Cat Error
+
+.code src/unwrap.go /type CatError/,/end unwrap/
+
+* errors.Unwrap  
+
+.code src/unwrap.go /START ERRORS UNWRAP OMIT/,/END ERRORS UNWRAP OMIT/
+.code src/unwrap.go /func main/,/end main/
+
+* CatError
+
+.image src/caterror.jpg 500 700
+
+* Do I need to make every error a new struct?
+
+* fmt.Errorf
+
+New `%w` verb introduced in `fmt.Errorf`
+
+.code src/fmt.go /START OMIT/,/END OMIT/
+
+- Only 1 `%w` verb may exist in the template string
+
+* errors.Is
+
+.code src/defs.go /START ISDEF OMIT/,/END ISDEF OMIT/
+.code src/defs.go /START IS OMIT/,/END IS OMIT/
+
+* errors.Is
+
+Before
+
+.code src/is.go /START BEFORE OMIT/,/END BEFORE OMIT/
+
+After
+
+.code src/is.go /START AFTER OMIT/,/END AFTER OMIT/
+
+* errors.As
+
+.code src/defs.go /START ASDEF OMIT/,/END ASDEF OMIT/
+.code src/defs.go /START AS OMIT/,/END AS OMIT/
+
+* errors.As
+
+Before
+
+.code src/as.go /START BEFORE OMIT/,/END BEFORE OMIT/
+
+After
+
+.code src/as.go /START AFTER OMIT/,/END AFTER OMIT/
+
+* Error formatting is not included in 1.13
+
+* Migrating
+
+  if err == io.ErrUnexpectedEOF
+
+Becomes
+
+  if errors.Is(err, io.ErrUnexpectedEOF)
+
+* Migrating
+
+  if e, ok := err.(*os.PathError); ok
+
+Becomes
+
+  var e *os.PathError
+  if errors.As(err, &e)
+
+* Migrating
+
+- Checks of the form "if err != nil" need not be changed.
+
+- io.EOF need not be changed?
+
+  Comparisons to io.EOF need not be changed, because io.EOF
+  should never be wrapped.
+
+* What if I am not able to move to 1.13 immediately
+
+* xerrors
+
+xerrors package has the same API as 1.13 error inspection
+
+  import "golang.org/x/xerrors"
